@@ -2,6 +2,7 @@ import hashlib
 import os
 import requests
 import shutil
+import textwrap
 
 from mc_parser import get_mojang
 
@@ -89,9 +90,14 @@ def main(IN_ROOTDIR, CACHE_DIR):
     ### Get version input, create folder and download server jar
     version_name = str()
     cache_exists = False
+    print(textwrap.dedent("""\
+          Version name (standard format, 1.x.y) or
+          'latest'/'latest-snap' for newest versions or
+          'list' to list all versions\
+          """))
     while True:
-        print("Enter a valid minecraft version, or list to see the list of versions")
-        version_name = input().strip().lower()
+        print("Enter the server version:")
+        version_name = input("> ").strip().lower()
         server_meta = get_mojang(version_name)
         if server_meta:
             url = server_meta["url"]
@@ -113,17 +119,19 @@ def main(IN_ROOTDIR, CACHE_DIR):
 
     # Check if folder exists for selected version
     if os.path.exists(version_name):
-        if not get_confirmation(f"Folder for '{version_name}' exists. Replace? <y/N>: ", "n"):
+        os.chdir(version_name)
+        if get_confirmation(f"Server for '{version_name}' exists. Replace server jar? <y/N>: ", "n"):
+            # Remove the old server jar
+            print("Deleting old server...")
+            os.remove(f"{version_name}.jar")
+
+        else:
+            # Abort script, server jar exists
             print("Script cancelled, exiting.")
             exit()
-
-        # Remove the old directory
-        else:
-            print("Deleting old server directory...")
-            shutil.rmtree(version_name)
-
-    os.mkdir(version_name)
-    os.chdir(version_name)
+    else:
+        os.mkdir(version_name)
+        os.chdir(version_name)
 
     fetch_server(version_name, url, cache=cache_exists, server_sha1sum=sha1sum)
 
