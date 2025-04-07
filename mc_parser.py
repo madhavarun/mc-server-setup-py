@@ -22,7 +22,11 @@ def get_mojang(version: str):
     latest_rel, latest_snap = version_manifest["latest"].values()
 
     if version == "list":
-            version_names = [id["id"] for id in version_manifest["versions"]]
+            version_names = []
+            for meta in version_manifest["versions"]:
+                if meta["id"] == "1.2.4":
+                    break
+                version_names.append(meta["id"])
             pretty_print(version_names)
             return None
 

@@ -31,6 +31,9 @@ def get_confirmation(prompt: str, default: str):
         confirmation = "y"
     elif confirmation == "no":
         confirmation = "n"
+    elif confirmation in exitwords:
+        print("Script cancelled, exiting.")
+        exit()
 
     return confirmation == "y"
 
@@ -98,6 +101,10 @@ def main(IN_ROOTDIR, CACHE_DIR):
     while True:
         print("Enter the server version:")
         version_name = input("> ").strip().lower()
+        if version_name in exitwords:
+            print("Script cancelled, exiting.")
+            exit()
+            
         server_meta = get_mojang(version_name)
         if server_meta:
             url = server_meta["url"]
@@ -139,8 +146,11 @@ def main(IN_ROOTDIR, CACHE_DIR):
         print("Script complete, exiting normally.")
         print(exit())
 
-    ram = input("Enter server RAM amount in GB: (2-6, default 2): ")
+    ram = input("Enter server RAM amount in GB (2-6, default 2): ")
     while True:
+        if ram in exitwords:
+            print("Skipped creating launch script, exiting.")
+            exit()
         if ram == "":
             ram = "2"
         try:
@@ -148,7 +158,7 @@ def main(IN_ROOTDIR, CACHE_DIR):
             break
         except ValueError:
             print("Enter an integer or leave blank for default")
-        ram = input("Enter server RAM amount in GB: (2-6, default 2): ")
+        ram = input("Enter server RAM amount in GB (2-6, default 2): ")
 
     if os.name == "nt":
         ext = "bat"
@@ -164,5 +174,7 @@ def main(IN_ROOTDIR, CACHE_DIR):
 if __name__ == "__main__":
     IN_ROOTDIR = os.path.exists(".rootdir")
     CACHE_DIR = os.path.abspath("cache") if IN_ROOTDIR else "."
+    exitwords = ["exit", "quit", "cancel", "e", "c", "q", "-1"]
+    print("At any prompt, enter 'exit' to cancel the script.")
     # TODO: User set cache path
     main(IN_ROOTDIR, CACHE_DIR)
